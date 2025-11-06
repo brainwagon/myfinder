@@ -25,8 +25,18 @@
             </div>
             <div class="control">
                 <label for="exposure">Exposure</label>
-                <input type="range" id="exposure" name="exposure" min="0" max="100" value="{{ exposure }}">
-                <span id="exposure_time_value">{{ exposure_ms }}</span>
+                <select id="exposure_select" name="exposure">
+                    {% for time in exposure_times %}
+                        <option value="{{ loop.index0 }}" {{ 'selected' if loop.index0 == exposure_index else '' }}>
+                            {% if time == 1000000 %}
+                                1s
+                            {% else %}
+                                1/{{ "%.0f"|format(1000000 / time) }}s
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+
             </div>
             <div class="control">
                 <label for="brightness">Brightness</label>
@@ -43,24 +53,7 @@
                 <input type="range" id="sharpness" name="sharpness" min="0" max="100" value="{{ sharpness }}">
                 <span id="sharpness_value">{{ sharpness }}</span>
             </div>
-            <div class="control">
-                <label for="ae_enable">Auto Exposure Enable</label>
-                <input type="checkbox" id="ae_enable" name="ae_enable" {{ 'checked' if ae_enable else '' }}>
-            </div>
-            <div class="control">
-                <label for="ae_exposure_mode">AE Exposure Mode</label>
-                <select id="ae_exposure_mode" name="ae_exposure_mode">
-                    <option value="0" {{ 'selected' if ae_exposure_mode == 0 else '' }}>Normal</option>
-                    <option value="1" {{ 'selected' if ae_exposure_mode == 1 else '' }}>Short</option>
-                    <option value="2" {{ 'selected' if ae_exposure_mode == 2 else '' }}>Long</option>
-                    <option value="3" {{ 'selected' if ae_exposure_mode == 3 else '' }}>Custom</option>
-                </select>
-            </div>
-            <div class="control">
-                <label for="exposure_value">AE Exposure Value</label>
-                <input type="range" id="exposure_value" name="exposure_value" min="0" max="100" value="{{ exposure_value }}">
-                <span id="exposure_value_display">{{ exposure_value_display }}</span>
-            </div>
+
             <div class="control">
                 <button id="capture_raw_button">Capture Raw Image</button>
             </div>

@@ -29,7 +29,7 @@ print("-------------------------------------------------------------------------
 
 # Set initial controls safely
 initial_controls = {
-    "AeEnable": True,
+
     "AnalogueGain": 1.0,
     "ExposureTime": 10000,
     "Brightness": 0.0,
@@ -77,10 +77,12 @@ def index():
     slider_values['gain'] = int(((current_gain - min_gain) / (max_gain - min_gain)) * 100) if (max_gain - min_gain) != 0 else 0
 
     # ExposureTime
-    min_exp, max_exp = 10000, 500000
-    current_exposure = max(min_exp, min(getattr(current_controls, "ExposureTime", 10000), max_exp))
-    slider_values['exposure'] = int(((current_exposure - min_exp) / (max_exp - min_exp)) * 100) if (max_exp - min_exp) != 0 else 0
-    slider_values['exposure_ms'] = f"{current_exposure / 1000:.2f} ms"
+    exposure_times = [1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
+    current_exposure = getattr(current_controls, "ExposureTime", 10000)
+    # Find the index of the closest exposure time
+    exposure_index = min(range(len(exposure_times)), key=lambda i: abs(exposure_times[i] - current_exposure))
+    slider_values['exposure_index'] = exposure_index
+    slider_values['exposure_times'] = exposure_times
 
     # Brightness
     min_bright, max_bright, _ = camera.camera_controls.get("Brightness", (-1.0, 1.0, 0.0))
@@ -97,19 +99,7 @@ def index():
     current_sharpness = getattr(current_controls, "Sharpness", 1.0)
     slider_values['sharpness'] = int(((current_sharpness - min_sharp) / (max_sharp - min_sharp)) * 100) if (max_sharp - min_sharp) != 0 else 0
 
-    # AeEnable
-    current_ae_enable = getattr(current_controls, "AeEnable", False)
-    slider_values['ae_enable'] = current_ae_enable
 
-    # ExposureValue
-    min_ev, max_ev, _ = camera.camera_controls.get("ExposureValue", (-8.0, 8.0, 0.0))
-    current_exposure_value = getattr(current_controls, "ExposureValue", 0.0)
-    slider_values['exposure_value'] = int(((current_exposure_value - min_ev) / (max_ev - min_ev)) * 100) if (max_ev - min_ev) != 0 else 0
-    slider_values['exposure_value_display'] = f"{current_exposure_value:.2f}"
-
-    # AeExposureMode
-    current_ae_exposure_mode = getattr(current_controls, "AeExposureMode", 0)
-    slider_values['ae_exposure_mode'] = current_ae_exposure_mode
 
     return render_template('index.html', model=model, pixel_array_size=pixel_array_size, **slider_values)
 
@@ -123,19 +113,18 @@ def video_feed():
 def set_controls():
     """Set camera controls."""
     gain = float(request.json.get('gain'))
-    exposure = float(request.json.get('exposure'))
+
     brightness = float(request.json.get('brightness'))
     contrast = float(request.json.get('contrast'))
     sharpness = float(request.json.get('sharpness'))
-    ae_enable = request.json.get('ae_enable') # This will be a boolean
-    exposure_value = float(request.json.get('exposure_value', 50.0))
-    ae_exposure_mode = int(request.json.get('ae_exposure_mode', 0))
+
 
     # Map slider values (0-100) to camera control values
     min_gain, max_gain, _ = camera.camera_controls.get("AnalogueGain", (1.0, 251.1886444091797, 1.0))
     analogue_gain = min_gain + (gain / 100.0) * (max_gain - min_gain)
-    min_exp, max_exp = 10000, 500000
-    exposure_time = int(min_exp + (exposure / 100.0) * (max_exp - min_exp))
+    exposure_times = [1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
+    exposure_index = int(request.json.get('exposure_index', 0))
+    exposure_time = exposure_times[exposure_index]
     min_bright, max_bright, _ = camera.camera_controls.get("Brightness", (-1.0, 1.0, 0.0))
     brightness_val = min_bright + (brightness / 100.0) * (max_bright - min_bright)
     min_contrast, max_contrast, _ = camera.camera_controls.get("Contrast", (0.0, 32.0, 1.0))
@@ -143,19 +132,13 @@ def set_controls():
     min_sharp, max_sharp, _ = camera.camera_controls.get("Sharpness", (0.0, 16.0, 1.0))
     sharpness_val = min_sharp + (sharpness / 100.0) * (max_sharp - min_sharp)
 
-    # Map ExposureValue slider (0-100) to -8.0 to 8.0
-    min_ev, max_ev, _ = camera.camera_controls.get("ExposureValue", (-8.0, 8.0, 0.0))
-    exposure_value_val = min_ev + (exposure_value / 100.0) * (max_ev - min_ev)
-    
     controls_to_set = {
-        "AeEnable": ae_enable,
+        "AeEnable": False,
         "AnalogueGain": analogue_gain,
         "ExposureTime": exposure_time,
         "Brightness": brightness_val,
         "Contrast": contrast_val,
-        "Sharpness": sharpness_val,
-        "ExposureValue": exposure_value_val,
-        "AeExposureMode": ae_exposure_mode
+        "Sharpness": sharpness_val
     }
     safe_set_controls(controls_to_set)
     return "", 204
