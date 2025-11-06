@@ -14,7 +14,11 @@ app = Flask(__name__)
 camera = Picamera2()
 
 # Initialize camera and set initial controls once
-camera.configure(camera.create_still_configuration())
+config = camera.create_still_configuration(lores={"size" : (640, 480)})
+print("STILL IMAGE CONFIGURATION")
+for k, v in config.items():
+	print(k, v)
+camera.configure(config)
 camera.start()
 
 # Print available controls for debugging
@@ -108,6 +112,14 @@ def video_feed():
     """Return the video feed."""
     return Response(gen_frames(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/snapshot')
+def snapshot():
+    """Capture a single frame and return it as a JPEG image."""
+    buffer = io.BytesIO()
+    camera.capture_file(buffer, format='jpeg')
+    frame = buffer.getvalue()
+    return Response(frame, mimetype='image/jpeg')
 
 @app.route('/set_controls', methods=['POST'])
 def set_controls():
