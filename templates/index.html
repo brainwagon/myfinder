@@ -16,6 +16,7 @@
             <p>Model: {{ model }}</p>
             <p>Pixel Array Size: {{ pixel_array_size }}</p>
         </div>
+
         <div class="controls-container">
             <h2>Controls</h2>
             <div class="control">
@@ -64,9 +65,17 @@
             <div class="control">
                 <button id="capture_full_fits_button">Capture Full FITS</button>
             </div>
+            <div class="control">
+                <button id="save_settings_button">Save Settings</button>
+            </div>
         </div>
     </div>
     <script src="/static/main.js"></script>
+    <script src="/static/gps.js"></script>
+    <div class="gps-container">
+        <p id="gps-data">GPS data not available</p>
+        <p id="gga-sentence"></p>
+    </div>
     <footer>
         <p>Copyright 2025, Mark VandeWettering &lt;mvandewettering@gmail.com&gt;</p>
     </footer>

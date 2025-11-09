@@ -11,8 +11,28 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const contrastValueSpan = document.getElementById('contrast_value');
     const sharpnessValueSpan = document.getElementById('sharpness_value');
 
+    const saveSettingsButton = document.getElementById('save_settings_button');
 
+    function saveSettings() {
+        const settings = {
+            gain: gainSlider.value,
+            exposure_index: exposureSelect.value
+        };
+        localStorage.setItem('cameraSettings', JSON.stringify(settings));
+        alert('Camera settings saved!');
+    }
 
+    function loadSettings() {
+        const savedSettings = localStorage.getItem('cameraSettings');
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            gainSlider.value = settings.gain;
+            exposureSelect.value = settings.exposure_index;
+            // sendControls will be called later in DOMContentLoaded, so no need to call it here
+        }
+    }
+
+    loadSettings(); // Load settings as soon as the DOM is ready
 
     function updateControlValueDisplay() {
 
@@ -131,7 +151,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     });
 
-    // Send initial control values to the backend and update display when the page loads
+    saveSettingsButton.addEventListener('click', saveSettings);
 
+    // Send initial control values to the backend and update display when the page loads
     sendControls();
+
+    function updateGpsData() {
+        fetch('/gps')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('gps-time').innerText = data.timestamp;
+                document.getElementById('gps-lat').innerText = data.latitude;
+                document.getElementById('gps-lon').innerText = data.longitude;
+                document.getElementById('gps-alt').innerText = data.altitude;
+            })
+            .catch(error => console.error('Error fetching GPS data:', error));
+    }
+
+    // Fetch GPS data every 10 seconds
+    setInterval(updateGpsData, 10000);
+    // Initial call to populate GPS data
+    updateGpsData();
 });
