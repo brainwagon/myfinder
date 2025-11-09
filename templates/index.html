@@ -14,7 +14,7 @@
         </div>
         <div class="camera-properties">
             <p>Model: {{ model }}</p>
-            <p>Pixel Array Size: {{ pixel_array_size }}</p>
+            <p id="pixel_array_size_display">Pixel Array Size: {{ pixel_array_size }}</p>
         </div>
 
         <div class="controls-container">
@@ -54,6 +54,10 @@
                 <label for="sharpness">Sharpness</label>
                 <input type="range" id="sharpness" name="sharpness" min="0" max="100" value="{{ sharpness }}">
                 <span id="sharpness_value">{{ sharpness }}</span>
+            </div>
+            <div class="control">
+                <label for="zoom_checkbox">Zoom 640x480</label>
+                <input type="checkbox" id="zoom_checkbox" name="zoom_checkbox">
             </div>
 
             <div class="control">

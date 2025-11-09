@@ -12,15 +12,51 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const sharpnessValueSpan = document.getElementById('sharpness_value');
 
     const saveSettingsButton = document.getElementById('save_settings_button');
+    const zoomCheckbox = document.getElementById('zoom_checkbox');
+    const pixelArraySizeDisplay = document.getElementById('pixel_array_size_display');
+
+    // Extract sensor width and height
+    const pixelArraySizeText = pixelArraySizeDisplay.innerText;
+    const regex = /Pixel Array Size: (\d+)x(\d+)/;
+    const match = pixelArraySizeText.match(regex);
+    let sensorWidth = 0;
+    let sensorHeight = 0;
+    if (match) {
+        sensorWidth = parseInt(match[1]);
+        sensorHeight = parseInt(match[2]);
+    }
 
     function saveSettings() {
         const settings = {
             gain: gainSlider.value,
-            exposure_index: exposureSelect.value
+            exposure_index: exposureSelect.value,
+            zoom_checked: zoomCheckbox.checked
         };
         localStorage.setItem('cameraSettings', JSON.stringify(settings));
         alert('Camera settings saved!');
     }
+
+    function sendScalerCrop(crop) {
+        fetch('/set_controls', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({"ScalerCrop": crop})
+        });
+    }
+
+    zoomCheckbox.addEventListener('change', () => {
+        if (zoomCheckbox.checked) {
+            const cropWidth = 640;
+            const cropHeight = 480;
+            const x = Math.floor((sensorWidth - cropWidth) / 2);
+            const y = Math.floor((sensorHeight - cropHeight) / 2);
+            sendScalerCrop([x, y, cropWidth, cropHeight]);
+        } else {
+            sendScalerCrop([0, 0, sensorWidth, sensorHeight]);
+        }
+    });
 
     function loadSettings() {
         const savedSettings = localStorage.getItem('cameraSettings');
@@ -28,6 +64,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const settings = JSON.parse(savedSettings);
             gainSlider.value = settings.gain;
             exposureSelect.value = settings.exposure_index;
+            if (settings.zoom_checked !== undefined) {
+                zoomCheckbox.checked = settings.zoom_checked;
+                // Manually trigger the change event to apply the crop
+                zoomCheckbox.dispatchEvent(new Event('change'));
+            }
             // sendControls will be called later in DOMContentLoaded, so no need to call it here
         }
     }
