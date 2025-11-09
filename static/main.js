@@ -13,18 +13,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const saveSettingsButton = document.getElementById('save_settings_button');
     const zoomCheckbox = document.getElementById('zoom_checkbox');
-    const pixelArraySizeDisplay = document.getElementById('pixel_array_size_display');
 
-    // Extract sensor width and height
-    const pixelArraySizeText = pixelArraySizeDisplay.innerText;
-    const regex = /Pixel Array Size: (\d+)x(\d+)/;
-    const match = pixelArraySizeText.match(regex);
-    let sensorWidth = 0;
-    let sensorHeight = 0;
-    if (match) {
-        sensorWidth = parseInt(match[1]);
-        sensorHeight = parseInt(match[2]);
-    }
+    // Hardcoded sensor dimensions
+    const sensorWidth = 1456;
+    const sensorHeight = 1088;
 
     function saveSettings() {
         const settings = {
@@ -48,11 +40,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     zoomCheckbox.addEventListener('change', () => {
         if (zoomCheckbox.checked) {
-            const cropWidth = 640;
-            const cropHeight = 480;
-            const x = Math.floor((sensorWidth - cropWidth) / 2);
-            const y = Math.floor((sensorHeight - cropHeight) / 2);
-            sendScalerCrop([x, y, cropWidth, cropHeight]);
+            sendScalerCrop([408, 304, 640, 480]);
         } else {
             sendScalerCrop([0, 0, sensorWidth, sensorHeight]);
         }
