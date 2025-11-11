@@ -15,6 +15,10 @@
         <div class="camera-properties">
             <p>Model: {{ model }}</p>
             <p id="pixel_array_size_display">Pixel Array Size: {{ pixel_array_size }}</p>
+            <div class="system-stats">
+                <p>CPU Temp: <span id="cpu-temp">...</span> &deg;C</p>
+                <p>CPU Load: <span id="cpu-load">...</span></p>
+            </div>
         </div>
 
         <div class="controls-container">
@@ -74,6 +78,9 @@
                 <button id="capture_full_fits_button">Capture Full FITS</button>
             </div>
             <div class="control">
+                <button id="solve_field_button">Solve Field</button>
+            </div>
+            <div class="control">
                 <button id="save_settings_button">Save Settings</button>
             </div>
         </div>
@@ -83,6 +90,11 @@
     <div class="gps-container">
         <p id="gps-data">GPS data not available</p>
         <p id="gga-sentence"></p>
+    </div>
+    <div class="solver-container">
+        <p id="solver-status">Solver status not available</p>
+        <p id="solver-result"></p>
+        <img id="solved-image" style="display: none;" />
     </div>
     <footer>
         <p>Copyright 2025, Mark VandeWettering &lt;mvandewettering@gmail.com&gt;</p>

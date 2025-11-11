@@ -2,3 +2,5 @@ Flask
 Pillow
 astropy
 numpy
+pyserial
+pynmea2

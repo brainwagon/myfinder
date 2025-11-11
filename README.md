@@ -10,7 +10,7 @@ in the captured imagery, especially when the gain was set to be values greater
 than one.   A bit of digging around revealed that it was likely caused
 by power supply noise on the 3.3v rail, but that there was an option I could
 add to `/boot/firmware/config.txt` that would fix it, and for once, it 
-actually did work.  You probably want to add this line to `/boot/firmware/config.txt':
+actually did work.  You probably want to add this line to `/boot/config.txt':
 
 ```
 power_force_3v3_pwm=1
@@ -23,6 +23,27 @@ power_force_3v3_pwm=1
 - **Camera Controls:** Adjust settings like gain, exposure, and white balance.
 - **Headless Operation:** Runs on a Raspberry Pi without a monitor or keyboard.
 - **Development Mode:** Includes a dummy camera interface for development on non-Pi machines.
+- **GPS Integration:** Displays real-time GPS data (time, location, altitude) on the web interface.
+
+## GPS Setup
+
+To use the GPS functionality, you need to connect a GPS receiver to your Raspberry Pi's GPIO pins. The application reads GPS data from the serial port `/dev/ttyAMA0`.
+
+1.  **Enable the serial port:**
+    - Run `sudo raspi-config`.
+    - Go to `Interface Options` -> `Serial Port`.
+    - When asked "Would you like a login shell to be accessible over serial?", select **No**.
+    - When asked "Would you like the serial port hardware to be enabled?", select **Yes**.
+    - Reboot your Raspberry Pi.
+
+2.  **Connect the GPS receiver:**
+    - **GPS TX** to **Raspberry Pi RX (GPIO 15)**
+    - **GPS RX** to **Raspberry Pi TX (GPIO 14)**
+    - **GPS VCC** to **Raspberry Pi 3.3V or 5V** (check your GPS module's requirements)
+    - **GPS GND** to **Raspberry Pi GND**
+    - **GPS PPS** to **Raspberry Pi GPIO 4 (optional)**. The application does not currently use the PPS signal, but it can be used for precise time synchronization.
+
+Once connected and enabled, the application will automatically detect the GPS and display the data on the web page.
 
 ## Project Structure
 
