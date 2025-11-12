@@ -1,6 +1,8 @@
 from flask import Flask, render_template, Response, request, jsonify
+import sys
 import io
 import math
+from math import radians
 import os
 import random
 import numpy as np
@@ -13,9 +15,75 @@ import pynmea2
 import threading
 import time
 import tetra3
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
+import ephem
+import csv
+import requests
 
 tetra = tetra3.Tetra3()
+
+font_path = "/usr/share/fonts/truetype/noto/NotoSansDisplay-Regular.ttf"
+font_size = 12
+font = ImageFont.truetype(font_path, font_size)
+
+for k, v in tetra.database_properties.items():
+        print(k, v)
+
+
+# go ahead and load the ids...
+
+ids = { }
+with open("ids.csv", "r") as f:
+    rdr = csv.reader(f)
+    for a, b, c in rdr:
+        if b == '':
+            ids[int(a)] = c
+        else:
+            ids[int(a)] = b
+
+# not the most efficient, but... 
+
+def decode_simbad_greek(text):
+    greek_map = { 'alf': 'α',  # alpha
+                  'bet': 'β',  # beta
+                  'gam': 'γ',  # gamma 
+                  'del': 'δ',  # delta
+                  'eps': 'ε',  # epsilon
+                  'zet': 'ζ',  # zeta
+                  'eta': 'η',  # eta 
+                  'tet': 'θ',  # theta 
+                  'iot': 'ι',  # iota 
+                  'kap': 'κ',  # kappa 
+                  'lam': 'λ',  # lambda 
+                  'mu.': 'μ',  # mu 
+                  'nu.': 'ν',  # nu 
+                  'ksi': 'ξ',  # xi 
+                  'omi': 'ο',  # omicron 
+                  'pi.': 'π',  # pi 
+                  'rho': 'ρ',  # rho 
+                  'sig': 'σ',  # sigma 
+                  'tau': 'τ',  # tau 
+                  'ups': 'υ',  # upsilon 
+                  'phi': 'φ',  # phi 
+                  'chi': 'χ',  # chi 
+                  'psi': 'ψ',  # psi 
+                  'ome': 'ω',  # omega 
+          } 
+    result = text
+    for code, greek in greek_map.items(): 
+        result = result.replace(code, greek) 
+    return result
+
+def point_stellarium(ra_radians, dec_radians, stellarium_url="http://192.168.1.139:8090"):
+    endpoint = f"{stellarium_url}/api/main/view" 
+    x = math.cos(dec_radians) * math.cos(ra_radians)
+    y = math.cos(dec_radians) * math.sin(ra_radians)
+    z = math.sin(dec_radians)
+    params = { 'j2000' : str([ x, y, z ]) }
+    print(params)
+    response = requests.post(endpoint, data=params)
+    print(response.status_code)
+    return response.status_code == 200
 
 from picamera2 import Picamera2
 
@@ -64,7 +132,8 @@ def solve_plate():
         solved_image_path = "static/solved_field.jpg"
 
         solution = tetra.solve_from_image(img,
-                return_visual=True, return_matches=True)
+                return_visual=True, return_matches=True,
+                distortion=-0.003857906866170312)
         if solution and 'RA' in solution and 'Dec' in solution and 'Roll' in solution:
             # Get the visual solution
             visual_solution = solution['visual']
@@ -84,6 +153,20 @@ def solve_plate():
             # Create a new image from the combined array
             combined_image = Image.fromarray(combined_array)
 
+            # okay, MTV
+            draw = ImageDraw.Draw(combined_image)
+            for id, p in zip(solution["matched_catID"], solution["matched_centroids"]):
+                try: 
+                    # not sure why x and y are swapped here...
+                    p = (int(p[1])+8, int(p[0])-8)
+                    id_str = decode_simbad_greek(ids.get(id, str(id)))
+                    id_fields = id_str.split()
+                    if id_fields[0] == "*":
+                        id_str = ' '.join(id_fields[1:])
+                    draw.text(p, f"{id_str}", fill=(255,255,255), font=font)
+                except:
+                    pass
+
             # Save the combined image
             combined_image.save(solved_image_path)
 
@@ -91,9 +174,16 @@ def solve_plate():
                 "ra": f"{solution['RA']:.4f}",
                 "dec": f"{solution['Dec']:.4f}",
                 "roll": f"{solution['Roll']:.4f}",
-                "solved_image_url": solved_image_path
+                "solved_image_url": solved_image_path,
+                "solution_time" : f"{solution["T_solve"]:.2f}ms",
+                "constellation" : ephem.constellation((radians(solution['RA']), radians(solution['Dec'])))[1],
             }
+
             solver_status = "solved"
+
+            # send the center to stellarium...
+            print(point_stellarium(radians(solution['RA']), radians(solution['Dec'])))
+
         else:
             img.save(solved_image_path)
             solver_status = "failed"

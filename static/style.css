@@ -18,6 +18,8 @@ h1 {
 
 .video-container {
     border: 1px solid #555; /* Lighter border for dark background */
+    width: 640px ;
+    height: 480px ;
 }
 
 .video-container img {
@@ -112,4 +114,15 @@ footer {
     color: red;
 }
 
+#solved-image {
+    border: 1px solid #555; /* Lighter border for dark background */
+    width: 640px ;
+    height: 480px ;
+}
 
+.control button:disabled {
+    background-color: #555;
+    color: #aaa;
+    cursor: not-allowed;
+}
+     

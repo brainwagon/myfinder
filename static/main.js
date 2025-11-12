@@ -197,10 +197,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
                 if (data.status === 'solved') {
                     solverStatusEl.innerText = 'Solved';
-                    solverResultEl.innerText = `RA: ${data.ra}, Dec: ${data.dec}, Roll: ${data.roll}`;
+                    solverResultEl.innerText = `RA: ${data.ra}, Dec: ${data.dec}, Roll: ${data.roll}, Solution Time: ${data.solution_time} Constellation: ${data.constellation}`;
                     solvedImageEl.src = data.solved_image_url + '?t=' + new Date().getTime(); // Add timestamp to avoid caching
                     solvedImageEl.style.display = 'block';
                     clearInterval(solveStatusPollInterval);
+                    solveFieldButton.disabled = false;
                 } else if (data.status === 'failed') {
                     solverStatusEl.innerText = 'Solver failed.';
                     solverResultEl.innerText = '';
@@ -211,6 +212,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         solvedImageEl.style.display = 'none';
                     }
                     clearInterval(solveStatusPollInterval);
+                    solveFieldButton.disabled = false;
                 } else {
                     solverStatusEl.innerText = `Solver status: ${data.status}`;
                 }
@@ -218,12 +220,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .catch(error => {
                 console.error('Error fetching solver status:', error);
                 clearInterval(solveStatusPollInterval);
+                solveFieldButton.disabled = false;
             });
     }
 
     function solveField() {
         const solverStatusEl = document.getElementById('solver-status');
         solverStatusEl.innerText = 'Starting solver...';
+        solveFieldButton.disabled = true;
 
         fetch('/solve', {
             method: 'POST'
@@ -236,11 +240,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 solveStatusPollInterval = setInterval(pollSolveStatus, 2000);
             } else {
                 solverStatusEl.innerText = 'Failed to start solver.';
+                solveFieldButton.disabled = false;
             }
         })
         .catch(error => {
             console.error('Error:', error);
             solverStatusEl.innerText = 'Error starting solver.';
+            solveFieldButton.disabled = false;
         });
     }
 
