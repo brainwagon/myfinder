@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const saveSettingsButton = document.getElementById('save_settings_button');
     const zoomSelect = document.getElementById('zoom_select');
+    const testModeCheckbox = document.getElementById('test_mode_checkbox');
 
     // Hardcoded sensor dimensions
     const sensorWidth = 1456;
@@ -226,6 +227,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
     solveFieldButton.addEventListener('click', solveField);
 
     saveSettingsButton.addEventListener('click', saveSettings);
+
+    function sendTestMode() {
+        fetch('/set_test_mode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ test_mode: testModeCheckbox.checked })
+        });
+    }
+
+    testModeCheckbox.addEventListener('change', sendTestMode);
 
     // Send initial control values to the backend and update display when the page loads
     sendControls();

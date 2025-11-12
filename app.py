@@ -98,24 +98,31 @@ atexit.register(close_camera)
 # Solver status
 solver_status = "idle"
 solver_result = {}
+test_mode = False # Global variable for test mode
 
 def solve_plate():
     """Capture an image and solve for RA/Dec/Roll."""
-    global solver_status, solver_result
+    global solver_status, solver_result, test_mode
     img = None
     try:
-        # For testing, load from a local file instead of capturing from camera
-        test_images_dir = "test-images"
-        image_files = [f for f in os.listdir(test_images_dir) if f.lower().endswith(('.jpg', '.jpeg'))]
-        if not image_files:
-            solver_status = "failed"
-            solver_result = {"error": "No test images found."}
-            print("Solver failed: No test images found in 'test-images' directory.")
-            return
-        random_image_file = random.choice(image_files)
-        image_path = os.path.join(test_images_dir, random_image_file)
-        img = Image.open(image_path)
         solved_image_path = "static/solved_field.jpg"
+        if test_mode:
+            # For testing, load from a local file instead of capturing from camera
+            test_images_dir = "test-images"
+            image_files = [f for f in os.listdir(test_images_dir) if f.lower().endswith(('.jpg', '.jpeg'))]
+            if not image_files:
+                solver_status = "failed"
+                solver_result = {"error": "No test images found."}
+                print("Solver failed: No test images found in 'test-images' directory.")
+                return
+            random_image_file = random.choice(image_files)
+            image_path = os.path.join(test_images_dir, random_image_file)
+            img = Image.open(image_path)
+        else:
+            # Capture from Picamera
+            buffer = io.BytesIO()
+            camera.capture_file(buffer, name='lores', format='jpeg')
+            img = Image.open(buffer)
 
         solution = tetra.solve_from_image(img,
                 return_visual=True, return_matches=True,
@@ -216,6 +223,15 @@ def system_stats():
         load = 'N/A'
 
     return jsonify(cpu_temp=f"{temp:.1f}", cpu_load=load)
+
+@app.route('/set_test_mode', methods=['POST'])
+def set_test_mode():
+    """Set the test mode state."""
+    global test_mode
+    data = request.json
+    test_mode = data.get('test_mode', False)
+    print(f"Test mode set to: {test_mode}")
+    return "", 204
 
 camera = Picamera2()
 
@@ -319,7 +335,7 @@ def index():
 
 
 
-    return render_template('index.html', model=model, pixel_array_size=pixel_array_size, **slider_values)
+    return render_template('index.html', model=model, pixel_array_size=pixel_array_size, test_mode=test_mode, **slider_values)
 
 @app.route('/video_feed')
 def video_feed():
