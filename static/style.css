@@ -50,6 +50,10 @@ body {
     font-family: 'Raleway', 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+.control button {
+    width: 100%;
+}
+
 .valid-fix {
     color: green;
 }
