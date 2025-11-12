@@ -1,4 +1,4 @@
-# Findr - a prototype telescope finder
+# findr - a prototype telescope finder
 
 **⚠️ Warning: This project is a work in progress and a prototype. It is not fully functional or robust and should not be used in production environments. ⚠️**
 
