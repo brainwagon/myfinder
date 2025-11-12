@@ -53,7 +53,13 @@ body {
 }
 
 .solver-container {
+    /* No longer needs position: relative here, as solved-image-wrapper will handle it */
+}
+
+.solved-image-wrapper {
     position: relative; /* Needed for absolute positioning of children */
+    width: 640px; /* Match image width */
+    height: 480px; /* Match image height */
 }
 
 .solution-overlay {

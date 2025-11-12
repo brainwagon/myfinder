@@ -166,12 +166,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const solverStatusEl = document.getElementById('solver-status');
                 const solverResultEl = document.getElementById('solver-result');
                 const solvedImageEl = document.getElementById('solved-image');
+                const solvedImageWrapperEl = document.querySelector('.solved-image-wrapper');
 
                 if (data.status === 'solved') {
                     solverStatusEl.innerText = 'Solved';
                     solverResultEl.innerText = `RA: ${data.ra}, Dec: ${data.dec}, Roll: ${data.roll}, Solution Time: ${data.solution_time} Constellation: ${data.constellation}`;
                     solvedImageEl.src = data.solved_image_url + '?t=' + new Date().getTime(); // Add timestamp to avoid caching
-                    solvedImageEl.style.display = 'block';
+                    solvedImageWrapperEl.style.display = 'block'; // Toggle wrapper display
                     clearInterval(solveStatusPollInterval);
                     solveFieldButton.disabled = false;
                 } else if (data.status === 'failed') {
@@ -179,9 +180,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     solverResultEl.innerText = '';
                     if (data.solved_image_url) {
                         solvedImageEl.src = data.solved_image_url + '?t=' + new Date().getTime();
-                        solvedImageEl.style.display = 'block';
+                        solvedImageWrapperEl.style.display = 'block'; // Toggle wrapper display
                     } else {
-                        solvedImageEl.style.display = 'none';
+                        solvedImageWrapperEl.style.display = 'none'; // Toggle wrapper display
                     }
                     clearInterval(solveStatusPollInterval);
                     solveFieldButton.disabled = false;
