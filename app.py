@@ -291,9 +291,8 @@ def index():
     slider_values = {}
 
     # AnalogueGain
-    min_gain, max_gain, _ = camera.camera_controls.get("AnalogueGain", (1.0, 251.1886444091797, 1.0))
     current_gain = getattr(current_controls, "AnalogueGain", 1.0)
-    slider_values['gain'] = int(((current_gain - min_gain) / (max_gain - min_gain)) * 9) + 1 if (max_gain - min_gain) != 0 else 1
+    slider_values['gain'] = int(current_gain)
 
     # ExposureTime
     exposure_times = [1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]
@@ -353,9 +352,7 @@ def set_controls():
 
     if 'gain' in data:
         gain = float(data.get('gain'))
-        min_gain, max_gain, _ = camera.camera_controls.get("AnalogueGain", (1.0, 251.1886444091797, 1.0))
-        analogue_gain = min_gain + ((gain - 1) / 9.0) * (max_gain - min_gain)
-        controls_to_set["AnalogueGain"] = analogue_gain
+        controls_to_set["AnalogueGain"] = gain
 
     if 'exposure_index' in data:
         exposure_times = [1000, 2000, 4000, 8000, 16000, 32000, 64000, 125000, 250000, 500000, 1000000]

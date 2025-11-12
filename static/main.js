@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', (event) => {
-    const gainSlider = document.getElementById('gain');
+    const gainSelect = document.getElementById('gain_select');
     const exposureSelect = document.getElementById('exposure_select');
     const brightnessSlider = document.getElementById('brightness');
     const contrastSlider = document.getElementById('contrast');
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function saveSettings() {
         const settings = {
-            gain: gainSlider.value,
+            gain: gainSelect.value,
             exposure_index: exposureSelect.value,
             zoom_setting: zoomSelect.value
         };
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const savedSettings = localStorage.getItem('cameraSettings');
         if (savedSettings) {
             const settings = JSON.parse(savedSettings);
-            gainSlider.value = settings.gain;
+            gainSelect.value = settings.gain;
             exposureSelect.value = settings.exposure_index;
             if (settings.zoom_setting !== undefined) {
                 zoomSelect.value = settings.zoom_setting;
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function sendControls() {
         const controls = {
-            gain: gainSlider.value,
+            gain: gainSelect.value,
             exposure_index: exposureSelect.value,
             brightness: brightnessSlider.value,
             contrast: contrastSlider.value,
@@ -96,24 +96,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         updateControlValueDisplay();
     }
 
-    gainSlider.addEventListener('input', sendControls);
+    gainSelect.addEventListener('change', sendControls);
     exposureSelect.addEventListener('change', sendControls);
     brightnessSlider.addEventListener('input', sendControls);
     contrastSlider.addEventListener('input', sendControls);
     sharpnessSlider.addEventListener('input', sendControls);
-
-    const gainDownButton = document.getElementById('gain_down_button');
-    const gainUpButton = document.getElementById('gain_up_button');
-
-    gainDownButton.addEventListener('click', () => {
-        gainSlider.value = Math.max(parseInt(gainSlider.value) - 1, gainSlider.min);
-        sendControls();
-    });
-
-    gainUpButton.addEventListener('click', () => {
-        gainSlider.value = Math.min(parseInt(gainSlider.value) + 1, gainSlider.max);
-        sendControls();
-    });
 
 
     const captureLoresJpegButton = document.getElementById('capture_lores_jpeg_button');

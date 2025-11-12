@@ -42,10 +42,12 @@
                         <button id="dark_mode_toggle">Toggle Dark Mode</button>
                     </div>
                     <div class="control">
-                        <label for="gain">Gain</label>
-                        <button id="gain_down_button">&lt;</button>
-                        <input type="range" id="gain" name="gain" min="1" max="10" value="{{ gain }}">
-                        <button id="gain_up_button">&gt;</button>
+                        <label for="gain_select">Gain</label>
+                        <select id="gain_select" name="gain">
+                            {% for i in range(1, 21) %}
+                                <option value="{{ i }}" {{ 'selected' if i == gain else '' }}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="control">
                         <label for="exposure">Exposure</label>
