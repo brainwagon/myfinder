@@ -272,4 +272,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
     setInterval(updateSystemStats, 5000);
     // Initial call to populate system stats
     updateSystemStats();
+
+    const darkModeToggle = document.getElementById('dark_mode_toggle');
+
+    function applyDarkMode(darkMode) {
+        if (darkMode === 'enabled') {
+            document.body.classList.add('dark-mode');
+        } else {
+            document.body.classList.remove('dark-mode');
+        }
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+        let darkMode = localStorage.getItem('darkMode');
+        if (darkMode === 'enabled') {
+            localStorage.setItem('darkMode', 'disabled');
+        } else {
+            localStorage.setItem('darkMode', 'enabled');
+        }
+        applyDarkMode(localStorage.getItem('darkMode'));
+    });
+
+    // Apply dark mode on page load
+    applyDarkMode(localStorage.getItem('darkMode'));
 });

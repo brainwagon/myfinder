@@ -5,97 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raspberry Pi Camera Control</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/skeleton-css@2.0.4/css/skeleton.min.css">
 </head>
 <body>
     <h1>My Finder</h1>
     <div class="container">
-        <div class="video-container">
-            <img src="{{ url_for('video_feed') }}" width="640">
+        <div class="top-container">
+            <div class="image-section">
+                <div class="video-container">
+                    <img src="{{ url_for('video_feed') }}" width="640">
+                </div>
+                <div class="solver-container">
+                    <p id="solver-status">Solver status not available</p>
+                    <p id="solver-result"></p>
+                    <img id="solved-image" style="display: none;" />
+                </div>
+            </div>
+            <div class="controls-section">
+                <div class="controls-container">
+                    <h2>Controls</h2>
+                    <div class="control">
+                        <label for="gain">Gain</label>
+                        <button id="gain_down_button">&lt;</button>
+                        <input type="range" id="gain" name="gain" min="1" max="10" value="{{ gain }}">
+                        <button id="gain_up_button">&gt;</button>
+                    </div>
+                    <div class="control">
+                        <label for="exposure">Exposure</label>
+                        <select id="exposure_select" name="exposure">
+                            {% for time in exposure_times %}
+                                <option value="{{ loop.index0 }}" {{ 'selected' if loop.index0 == exposure_index else '' }}>
+                                    {% if time == 1000000 %}
+                                        1s
+                                    {% else %}
+                                        1/{{ "%.0f"|format(1000000 / time) }}s
+                                    {% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                    </div>
+                    <div class="control">
+                        <label for="brightness">Brightness</label>
+                        <input type="range" id="brightness" name="brightness" min="0" max="100" value="{{ brightness }}">
+                        <span id="brightness_value">{{ brightness }}</span>
+                    </div>
+                    <div class="control">
+                        <label for="contrast">Contrast</label>
+                        <input type="range" id="contrast" name="contrast" min="0" max="100" value="{{ contrast }}">
+                        <span id="contrast_value">{{ contrast }}</span>
+                    </div>
+                    <div class="control">
+                        <label for="sharpness">Sharpness</label>
+                        <input type="range" id="sharpness" name="sharpness" min="0" max="100" value="{{ sharpness }}">
+                        <span id="sharpness_value">{{ sharpness }}</span>
+                    </div>
+                    <div class="control">
+                        <label for="zoom_select">Zoom</label>
+                        <select id="zoom_select" name="zoom_select">
+                            <option value="none">None</option>
+                            <option value="640x480">640x480</option>
+                            <option value="320x240">320x240</option>
+                        </select>
+                    </div>
+
+                    <div class="control">
+                        <button id="capture_lores_jpeg_button">Capture LoRes JPEG</button>
+                    </div>
+                    <div class="control">
+                        <button id="capture_full_jpeg_button">Capture Full JPEG</button>
+                    </div>
+                    <div class="control">
+                        <button id="capture_full_fits_button">Capture Full FITS</button>
+                    </div>
+                    <div class="control">
+                        <button id="solve_field_button">Solve Field</button>
+                    </div>
+                    <div class="control">
+                        <button id="save_settings_button">Save Settings</button>
+                    </div>
+                    <div class="control">
+                        <button id="dark_mode_toggle">Toggle Dark Mode</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="camera-properties">
-            <p>Model: {{ model }}</p>
-            <p id="pixel_array_size_display">Pixel Array Size: {{ pixel_array_size }}</p>
-            <div class="system-stats">
-                <p>CPU Temp: <span id="cpu-temp">...</span> &deg;C</p>
-                <p>CPU Load: <span id="cpu-load">...</span></p>
+        <div class="info-section">
+            <div class="camera-properties">
+                <p>Model: {{ model }}</p>
+                <p id="pixel_array_size_display">Pixel Array Size: {{ pixel_array_size }}</p>
+                <div class="system-stats">
+                    <p>CPU Temp: <span id="cpu-temp">...</span> &deg;C</p>
+                    <p>CPU Load: <span id="cpu-load">...</span></p>
+                </div>
             </div>
-        </div>
-
-        <div class="controls-container">
-            <h2>Controls</h2>
-            <div class="control">
-                <label for="gain">Gain</label>
-                <button id="gain_down_button">&lt;</button>
-                <input type="range" id="gain" name="gain" min="1" max="10" value="{{ gain }}">
-                <button id="gain_up_button">&gt;</button>
-            </div>
-            <div class="control">
-                <label for="exposure">Exposure</label>
-                <select id="exposure_select" name="exposure">
-                    {% for time in exposure_times %}
-                        <option value="{{ loop.index0 }}" {{ 'selected' if loop.index0 == exposure_index else '' }}>
-                            {% if time == 1000000 %}
-                                1s
-                            {% else %}
-                                1/{{ "%.0f"|format(1000000 / time) }}s
-                            {% endif %}
-                        </option>
-                    {% endfor %}
-                </select>
-
-            </div>
-            <div class="control">
-                <label for="brightness">Brightness</label>
-                <input type="range" id="brightness" name="brightness" min="0" max="100" value="{{ brightness }}">
-                <span id="brightness_value">{{ brightness }}</span>
-            </div>
-            <div class="control">
-                <label for="contrast">Contrast</label>
-                <input type="range" id="contrast" name="contrast" min="0" max="100" value="{{ contrast }}">
-                <span id="contrast_value">{{ contrast }}</span>
-            </div>
-            <div class="control">
-                <label for="sharpness">Sharpness</label>
-                <input type="range" id="sharpness" name="sharpness" min="0" max="100" value="{{ sharpness }}">
-                <span id="sharpness_value">{{ sharpness }}</span>
-            </div>
-            <div class="control">
-                <label for="zoom_select">Zoom</label>
-                <select id="zoom_select" name="zoom_select">
-                    <option value="none">None</option>
-                    <option value="640x480">640x480</option>
-                    <option value="320x240">320x240</option>
-                </select>
-            </div>
-
-            <div class="control">
-                <button id="capture_lores_jpeg_button">Capture LoRes JPEG</button>
-            </div>
-            <div class="control">
-                <button id="capture_full_jpeg_button">Capture Full JPEG</button>
-            </div>
-            <div class="control">
-                <button id="capture_full_fits_button">Capture Full FITS</button>
-            </div>
-            <div class="control">
-                <button id="solve_field_button">Solve Field</button>
-            </div>
-            <div class="control">
-                <button id="save_settings_button">Save Settings</button>
+            <div class="gps-container">
+                <p id="gps-data">GPS data not available</p>
+                <p id="gga-sentence"></p>
             </div>
         </div>
     </div>
     <script src="/static/main.js"></script>
     <script src="/static/gps.js"></script>
-    <div class="gps-container">
-        <p id="gps-data">GPS data not available</p>
-        <p id="gga-sentence"></p>
-    </div>
-    <div class="solver-container">
-        <p id="solver-status">Solver status not available</p>
-        <p id="solver-result"></p>
-        <img id="solved-image" style="display: none;" />
-    </div>
     <footer>
         <p>Copyright 2025, Mark VandeWettering &lt;mvandewettering@gmail.com&gt;</p>
     </footer>
