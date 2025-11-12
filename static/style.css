@@ -46,6 +46,10 @@ body {
     margin-bottom: 1em;
 }
 
+.control label {
+    font-family: 'Raleway', 'HelveticaNeue', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
 .valid-fix {
     color: green;
 }
