@@ -16,19 +16,25 @@ document.addEventListener('DOMContentLoaded', (event) => {
     videoModeSelect.addEventListener('change', () => {
         currentVideoMode = videoModeSelect.value;
         updateVideoModeOverlay();
-        updateVideoFeedAndFPS(); // Update the feed immediately
+        updateVideoFeed(); // Update the feed immediately
         if (currentVideoMode === 'solved' && !isSolving) {
             solveField();
         }
     });
 
-    // Function to update the video feed and fetch FPS
-    function updateVideoFeedAndFPS() {
-        if (videoFeedImg && currentVideoMode === 'live') {
-            // Add a timestamp to the URL to prevent caching and force reload
-            videoFeedImg.src = '/video_feed?t=' + new Date().getTime();
+    function updateVideoFeed() {
+        if (videoFeedImg) {
+            if (currentVideoMode === 'live') {
+                videoFeedImg.src = '/video_feed?t=' + new Date().getTime();
+            } else {
+                videoFeedImg.src = '/solved_field.jpg?t=' + new Date().getTime();
+            }
         }
+    }
 
+    // Update video feed and FPS every 100ms (adjust as needed)
+    setInterval(() => {
+        updateVideoFeed();
         if (fpsDisplay) {
             const fps_url = currentVideoMode === 'live' ? '/get_fps' : '/get_solve_fps';
             fetch(fps_url)
@@ -38,10 +44,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 })
                 .catch(error => console.error('Error fetching FPS:', error));
         }
-    }
-
-    // Update video feed and FPS every 100ms (adjust as needed)
-    setInterval(updateVideoFeedAndFPS, 100);
+    }, 100);
 
     const gainSelect = document.getElementById('gain_select');
     const exposureSelect = document.getElementById('exposure_select');
@@ -219,7 +222,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (data.status === 'solved') {
                     solverStatusEl.innerText = 'Solved';
                     solverResultEl.innerText = `RA: ${data.ra}, Dec: ${data.dec}, Roll: ${data.roll}, Solution Time: ${data.solution_time} Constellation: ${data.constellation}`;
-                    videoFeedImg.src = data.solved_image_url + '?t=' + new Date().getTime(); // Add timestamp to avoid caching
                     clearInterval(solveStatusPollInterval);
                     isSolving = false; // Reset flag
                     if (currentVideoMode === 'solved') {
@@ -228,11 +230,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 } else if (data.status === 'failed') {
                     solverStatusEl.innerText = 'Solver failed.';
                     solverResultEl.innerText = '';
-                    if (data.solved_image_url) {
-                        videoFeedImg.src = data.solved_image_url + '?t=' + new Date().getTime();
-                    } else {
-                        videoFeedImg.src = '/static/black_640x480.jpg'; // Display black image on failure
-                    }
                     clearInterval(solveStatusPollInterval);
                     isSolving = false; // Reset flag
                     if (currentVideoMode === 'solved') {
