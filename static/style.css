@@ -46,22 +46,55 @@ body {
     font-size: 1.2em;
 }
 
-.fps-overlay {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: rgba(0, 0, 0, 0.7); /* Dark background with some transparency */
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    z-index: 10; /* Ensure it's above the image */
-    font-size: 1.2em;
+.fps-overlay {                                                        
+
+    position: absolute;                                               
+
+    top: 10px;                                                        
+
+    left: 10px;                                                       
+
+    background-color: rgba(0, 0, 0, 0.7); /* Dark background with some
+
+ transparency */                                                       
+
+    color: white;                                                     
+
+    padding: 5px 10px;                                                
+
+    border-radius: 5px;                                               
+
+    font-weight: bold;                                                
+
+    z-index: 10; /* Ensure it's above the image */                    
+
+    font-size: 1.2em;                                                 
+
+}                                                                     
+
+
+
+.solve-success {
+
+    background-color: rgba(0, 128, 0, 0.7); /* Green */
+
 }
 
-.video-container img {
-    display: block;
-    max-width: 100%; /* Ensure image scales within container */
+
+
+.solve-fail {
+
+    background-color: rgba(255, 0, 0, 0.7); /* Red */
+
+}
+
+                                                                      
+
+ .video-container img {                                                
+
+     display: block;                                                   
+
+     max-width: 100%; /* Ensure image scales within container */
     height: auto; /* Maintain aspect ratio */
 }
 

@@ -17,7 +17,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         currentVideoMode = videoModeSelect.value;
         updateVideoModeOverlay();
         updateVideoFeed(); // Update the feed immediately
-        if (currentVideoMode === 'solved' && !isSolving) {
+        if (currentVideoMode === 'live') {
+            videoModeOverlay.classList.remove('solve-success', 'solve-fail');
+        } else if (currentVideoMode === 'solved' && !isSolving) {
             solveField();
         }
     });
@@ -222,6 +224,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 if (data.status === 'solved') {
                     solverStatusEl.innerText = 'Solved';
                     solverResultEl.innerText = `RA: ${data.ra}, Dec: ${data.dec}, Roll: ${data.roll}, Solution Time: ${data.solution_time} Constellation: ${data.constellation}`;
+                    videoModeOverlay.innerText = 'SOLVE';
+                    videoModeOverlay.classList.remove('solve-fail');
+                    videoModeOverlay.classList.add('solve-success');
                     clearInterval(solveStatusPollInterval);
                     isSolving = false; // Reset flag
                     if (currentVideoMode === 'solved') {
@@ -230,6 +235,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 } else if (data.status === 'failed') {
                     solverStatusEl.innerText = 'Solver failed.';
                     solverResultEl.innerText = '';
+                    videoModeOverlay.innerText = 'FAIL';
+                    videoModeOverlay.classList.remove('solve-success');
+                    videoModeOverlay.classList.add('solve-fail');
                     clearInterval(solveStatusPollInterval);
                     isSolving = false; // Reset flag
                     if (currentVideoMode === 'solved') {
