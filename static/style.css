@@ -99,6 +99,12 @@ body {
 
 .radec-container table {
     width: 100%;
+    border-collapse: collapse; /* Remove space between cell borders */
+    border: 1px solid #ccc; /* Add border around the table */
+}
+
+.radec-container table td {
+    border: none; /* Remove borders from cells */
 }
 
 .radec-container .label {
