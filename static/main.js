@@ -44,15 +44,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
     // Update video feed and FPS every 100ms (adjust as needed)
     setInterval(() => {
         updateVideoFeed();
-        if (fpsDisplay) {
-            const fps_url = currentVideoMode === 'live' ? '/get_fps' : '/get_solve_fps';
-            fetch(fps_url)
-                .then(response => response.json())
-                .then(data => {
-                    fpsDisplay.innerText = `FPS: ${data.fps}`;
-                })
-                .catch(error => console.error('Error fetching FPS:', error));
-        }
+        fetch('/get_pause_state') // New endpoint to get pause state
+            .then(response => response.json())
+            .then(data => {
+                if (data.is_paused) {
+                    fpsDisplay.innerText = 'FPS: Paused';
+                } else if (fpsDisplay) {
+                    const fps_url = currentVideoMode === 'live' ? '/get_fps' : '/get_solve_fps';
+                    fetch(fps_url)
+                        .then(response => response.json())
+                        .then(data => {
+                            fpsDisplay.innerText = `FPS: ${data.fps}`;
+                        })
+                        .catch(error => console.error('Error fetching FPS:', error));
+                }
+            })
+            .catch(error => console.error('Error fetching pause state:', error));
     }, 100);
 
     const gainSelect = document.getElementById('gain_select');

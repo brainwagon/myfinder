@@ -449,6 +449,12 @@ def get_solve_fps():
     """Return the current solve FPS."""
     return jsonify(fps=f"{solve_fps:.1f}")
 
+@app.route('/get_pause_state')
+def get_pause_state():
+    """Return the current pause state."""
+    global is_paused
+    return jsonify(is_paused=is_paused)
+
 @app.route('/')
 def index():
     """Return the main page with initial slider values."""
