@@ -4,10 +4,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const videoModeSelect = document.getElementById('video_mode_select');
 
     let currentVideoMode = 'live'; // Default to live mode
+    let isSolving = false; // Flag to prevent multiple simultaneous solves
 
     videoModeSelect.addEventListener('change', () => {
         currentVideoMode = videoModeSelect.value;
         updateVideoFeedAndFPS(); // Update the feed immediately
+        if (currentVideoMode === 'solved' && !isSolving) {
+            solveField();
+        }
     });
 
     // Function to update the video feed and fetch FPS
@@ -142,7 +146,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const captureLoresJpegButton = document.getElementById('capture_lores_jpeg_button');
     const captureFullJpegButton = document.getElementById('capture_full_jpeg_button');
-    const solveFieldButton = document.getElementById('solve_field_button');
+
 
     captureLoresJpegButton.addEventListener('click', () => {
         fetch('/capture_lores_jpeg')
@@ -210,7 +214,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     videoModeSelect.value = 'solved';
                     currentVideoMode = 'solved';
                     clearInterval(solveStatusPollInterval);
-                    solveFieldButton.disabled = false;
+                    isSolving = false; // Reset flag
                 } else if (data.status === 'failed') {
                     solverStatusEl.innerText = 'Solver failed.';
                     solverResultEl.innerText = '';
@@ -222,7 +226,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     videoModeSelect.value = 'solved';
                     currentVideoMode = 'solved';
                     clearInterval(solveStatusPollInterval);
-                    solveFieldButton.disabled = false;
+                    isSolving = false; // Reset flag
                 } else {
                     solverStatusEl.innerText = `Solver status: ${data.status}`;
                 }
@@ -235,9 +239,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function solveField() {
+        if (isSolving) return; // Prevent multiple solves
+
         const solverStatusEl = document.getElementById('solver-status');
         solverStatusEl.innerText = 'Starting solver...';
-        solveFieldButton.disabled = true;
+        isSolving = true; // Set flag
 
         fetch('/solve', {
             method: 'POST'
@@ -250,17 +256,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 solveStatusPollInterval = setInterval(pollSolveStatus, 200);
             } else {
                 solverStatusEl.innerText = 'Failed to start solver.';
-                solveFieldButton.disabled = false;
+                isSolving = false; // Reset flag on failure to start
             }
         })
         .catch(error => {
             console.error('Error:', error);
             solverStatusEl.innerText = 'Error starting solver.';
-            solveFieldButton.disabled = false;
+            isSolving = false; // Reset flag on error
         });
     }
 
-    solveFieldButton.addEventListener('click', solveField);
+
 
     saveSettingsButton.addEventListener('click', saveSettings);
 
