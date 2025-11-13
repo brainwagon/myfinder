@@ -46,6 +46,19 @@ body {
     font-size: 1.2em;
 }
 
+.fps-overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark background with some transparency */
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 10; /* Ensure it's above the image */
+    font-size: 1.2em;
+}
+
 .video-container img {
     display: block;
     max-width: 100%; /* Ensure image scales within container */

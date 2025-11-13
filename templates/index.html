@@ -15,8 +15,9 @@
         <div class="top-container">
             <div class="image-section">
                 <div class="video-container">
-                    <img src="{{ url_for('video_feed') }}" width="640">
+                    <img id="video_feed_img" src="{{ url_for('video_feed') }}" width="640">
                     <span class="live-overlay">LIVE</span>
+                    <span id="fps_display" class="fps-overlay">FPS: 0</span>
                 </div>
                 <div class="solver-container">
                     <p id="solver-status">Solver status not available</p>
