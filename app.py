@@ -100,6 +100,52 @@ solver_status = "idle"
 solver_result = {}
 test_mode = False # Global variable for test mode
 
+# Global variables for video feed and FPS
+latest_frame_bytes = None
+current_fps = 0
+last_frame_time = time.time()
+frame_count = 0
+
+# Global variables for video feed and FPS
+latest_frame_bytes = None
+current_fps = 0
+last_frame_time = time.time()
+frame_count = 0
+
+def capture_and_process_frames():
+    """Continuously captures frames, calculates FPS, and stores the latest frame."""
+    global latest_frame_bytes, current_fps, last_frame_time, frame_count
+    while True:
+        try:
+            buffer = io.BytesIO()
+            camera.capture_file(buffer, name='lores', format='jpeg')
+            frame = buffer.getvalue()
+
+            latest_frame_bytes = frame
+
+            frame_count += 1
+            current_time = time.time()
+            elapsed_time = current_time - last_frame_time
+
+            # Debug prints for frame count and elapsed time
+            # print(f"Frame count: {frame_count}, Elapsed time: {elapsed_time:.2f}s")
+
+            if elapsed_time >= 1.0: # Update FPS every second
+                current_fps = frame_count / elapsed_time
+                frame_count = 0
+                last_frame_time = current_time
+            time.sleep(0.01) # Small delay to prevent busy-waiting
+        except Exception as e:
+            print(f"Error capturing frame: {e}")
+            # Optionally, you might want to set latest_frame_bytes to a placeholder
+            # or handle the error in a way that doesn't crash the thread.
+            time.sleep(1) # Wait a bit before retrying to avoid spamming errors
+
+# Start the frame capture and processing in a separate thread
+frame_capture_thread = threading.Thread(target=capture_and_process_frames)
+frame_capture_thread.daemon = True
+frame_capture_thread.start()
+
 # In-memory storage for the solved image bytes to avoid writing to disk.
 # Access guarded by solved_image_lock.
 solved_image_bytes = None
@@ -308,14 +354,12 @@ def safe_set_controls(controls):
 
 safe_set_controls(initial_controls)
 
-def gen_frames():
-    """Generate frames for the video stream."""
-    while True:
-        buffer = io.BytesIO()
-        camera.capture_file(buffer, name='lores', format='jpeg')
-        frame = buffer.getvalue()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+
+@app.route('/get_fps')
+def get_fps():
+    """Return the current FPS."""
+    return jsonify(fps=f"{current_fps:.1f}")
 
 @app.route('/')
 def index():
@@ -364,9 +408,11 @@ def index():
 
 @app.route('/video_feed')
 def video_feed():
-    """Return the video feed."""
-    return Response(gen_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    """Return the latest video frame."""
+    global latest_frame_bytes
+    if latest_frame_bytes:
+        return Response(latest_frame_bytes, mimetype='image/jpeg')
+    return "", 204 # No content if no frame is available yet
 
 @app.route('/capture_lores_jpeg')
 def capture_lores_jpeg():

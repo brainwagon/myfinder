@@ -1,4 +1,27 @@
 document.addEventListener('DOMContentLoaded', (event) => {
+    const videoFeedImg = document.getElementById('video_feed_img');
+    const fpsDisplay = document.getElementById('fps_display');
+
+    // Function to update the video feed and fetch FPS
+    function updateVideoFeedAndFPS() {
+        if (videoFeedImg) {
+            // Add a timestamp to the URL to prevent caching and force reload
+            videoFeedImg.src = '/video_feed?t=' + new Date().getTime();
+        }
+
+        if (fpsDisplay) {
+            fetch('/get_fps')
+                .then(response => response.json())
+                .then(data => {
+                    fpsDisplay.innerText = `FPS: ${data.fps}`;
+                })
+                .catch(error => console.error('Error fetching FPS:', error));
+        }
+    }
+
+    // Update video feed and FPS every 100ms (adjust as needed)
+    setInterval(updateVideoFeedAndFPS, 100);
+
     const gainSelect = document.getElementById('gain_select');
     const exposureSelect = document.getElementById('exposure_select');
     const brightnessSlider = document.getElementById('brightness');
