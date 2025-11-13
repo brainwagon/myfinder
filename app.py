@@ -382,7 +382,6 @@ def set_test_mode():
     global test_mode
     data = request.json
     test_mode = data.get('test_mode', False)
-    print(f"Test mode set to: {test_mode}")
     return "", 204
 
 camera = Picamera2()
