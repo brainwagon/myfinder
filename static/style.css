@@ -98,13 +98,16 @@ body {
 }
 
 .radec-container table {
-    width: 100%;
+    width: auto; /* Allow table to shrink to content */
+    margin-left: auto; /* Center the table */
+    margin-right: auto; /* Center the table */
     border-collapse: collapse; /* Remove space between cell borders */
     border: 1px solid #ccc; /* Add border around the table */
 }
 
 .radec-container table td {
     border: none; /* Remove borders from cells */
+    padding: 0 10px; /* Add some padding to cells */
 }
 
 .radec-container .label {
