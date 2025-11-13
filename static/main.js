@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const fpsDisplay = document.getElementById('fps_display');
     const videoModeSelect = document.getElementById('video_mode_select');
     const videoModeOverlay = document.getElementById('video_mode_overlay');
+    const radecContainer = document.getElementById('radec-container');
+    const raDisplay = document.getElementById('ra-display');
+    const decDisplay = document.getElementById('dec-display');
 
     let currentVideoMode = 'live'; // Default to live mode
     let isSolving = false; // Flag to prevent multiple simultaneous solves
@@ -19,8 +22,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         updateVideoFeed(); // Update the feed immediately
         if (currentVideoMode === 'live') {
             videoModeOverlay.classList.remove('solve-success', 'solve-fail');
-        } else if (currentVideoMode === 'solved' && !isSolving) {
-            solveField();
+            radecContainer.style.display = 'none';
+        } else if (currentVideoMode === 'solved') {
+            radecContainer.style.display = 'block';
+            if (!isSolving) {
+                solveField();
+            }
         }
     });
 
@@ -218,14 +225,33 @@ document.addEventListener('DOMContentLoaded', (event) => {
         fetch('/solve_status')
             .then(response => response.json())
             .then(data => {
-
-
-
+                if (data.status === 'solved') {
+                    raDisplay.innerText = `RA: ${data.ra_hms}`;
+                    decDisplay.innerText = `Dec: ${data.dec_dms}`;
+                    videoModeOverlay.innerText = 'SOLVE';
+                    videoModeOverlay.classList.remove('solve-fail');
+                    videoModeOverlay.classList.add('solve-success');
+                    clearInterval(solveStatusPollInterval);
+                    isSolving = false; // Reset flag
+                    if (currentVideoMode === 'solved') {
+                        solveField();
+                    }
+                } else if (data.status === 'failed') {
+                    raDisplay.innerText = 'RA: --:--:--.-';
+                    decDisplay.innerText = 'Dec: --:--:--.-';
+                    videoModeOverlay.innerText = 'FAIL';
+                    videoModeOverlay.classList.remove('solve-success');
+                    videoModeOverlay.classList.add('solve-fail');
+                    clearInterval(solveStatusPollInterval);
+                    isSolving = false; // Reset flag
+                    if (currentVideoMode === 'solved') {
+                        solveField();
+                    }
+                }
             })
             .catch(error => {
                 console.error('Error fetching solver status:', error);
                 clearInterval(solveStatusPollInterval);
-                solveFieldButton.disabled = false;
             });
     }
 

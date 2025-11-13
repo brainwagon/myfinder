@@ -90,7 +90,18 @@ body {
 
                                                                       
 
- .video-container img {                                                
+ .radec-container {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 20px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.radec-container span {
+    margin: 0 10px;
+}
+
+.video-container img {                                                
 
      display: block;                                                   
 

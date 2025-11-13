@@ -229,10 +229,14 @@ def solve_plate():
 
             # Build solver_result
             solution_time_val = solution.get("T_solve", 0.0)
+            ra_hms = ephem.hours(radians(solution['RA']))
+            dec_dms = ephem.degrees(radians(solution['Dec']))
             solver_result = {
                 "ra": f"{solution['RA']:.4f}",
                 "dec": f"{solution['Dec']:.4f}",
                 "roll": f"{solution['Roll']:.4f}",
+                "ra_hms": str(ra_hms),
+                "dec_dms": str(dec_dms),
                 "solved_image_url": "/solved_field.jpg",
                 "solution_time": f"{solution_time_val:.2f}ms",
                 "constellation": ephem.constellation((radians(solution['RA']), radians(solution['Dec'])))[1],
