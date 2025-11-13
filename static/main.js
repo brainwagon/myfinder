@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
 
         if (fpsDisplay) {
-            fetch('/get_fps')
+            const fps_url = currentVideoMode === 'live' ? '/get_fps' : '/get_solve_fps';
+            fetch(fps_url)
                 .then(response => response.json())
                 .then(data => {
                     fpsDisplay.innerText = `FPS: ${data.fps}`;

@@ -98,13 +98,14 @@ atexit.register(close_camera)
 # Solver status
 solver_status = "idle"
 solver_result = {}
-test_mode = False # Global variable for test mode
-
 # Global variables for video feed and FPS
 latest_frame_bytes = None
 current_fps = 0
 last_frame_time = time.time()
 frame_count = 0
+solve_fps = 0
+last_solve_time = time.time()
+solve_count = 0
 
 # Global variables for video feed and FPS
 latest_frame_bytes = None
@@ -257,6 +258,15 @@ def solve_plate():
                 pass
         solver_status = "failed"
         solver_result = {"solved_image_url": "/solved_field.jpg"}
+    finally:
+        global solve_fps, last_solve_time, solve_count
+        solve_count += 1
+        current_time = time.time()
+        elapsed_time = current_time - last_solve_time
+        if elapsed_time >= 1.0:
+            solve_fps = solve_count / elapsed_time
+            solve_count = 0
+            last_solve_time = current_time
 
 @app.route('/solve', methods=['POST'])
 def solve():
@@ -358,6 +368,11 @@ safe_set_controls(initial_controls)
 def get_fps():
     """Return the current FPS."""
     return jsonify(fps=f"{current_fps:.1f}")
+
+@app.route('/get_solve_fps')
+def get_solve_fps():
+    """Return the current solve FPS."""
+    return jsonify(fps=f"{solve_fps:.1f}")
 
 @app.route('/')
 def index():
