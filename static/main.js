@@ -226,8 +226,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'solved') {
-                    raDisplay.innerText = ` RA: ${data.ra_hms}`;
-                    decDisplay.innerText = `Dec: ${data.dec_dms}`;
+                    raDisplay.innerText = data.ra_hms;
+                    decDisplay.innerText = data.dec_dms;
                     videoModeOverlay.innerText = 'SOLVE';
                     videoModeOverlay.classList.remove('solve-fail');
                     videoModeOverlay.classList.add('solve-success');
@@ -237,8 +237,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         solveField();
                     }
                 } else if (data.status === 'failed') {
-                    raDisplay.innerText = 'RA: --:--:--.-';
-                    decDisplay.innerText = 'Dec: --:--:--.-';
+                    raDisplay.innerText = '--:--:--.-';
+                    decDisplay.innerText = '--:--:--.-';
                     videoModeOverlay.innerText = 'FAIL';
                     videoModeOverlay.classList.remove('solve-success');
                     videoModeOverlay.classList.add('solve-fail');
