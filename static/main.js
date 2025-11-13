@@ -272,7 +272,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     if (currentVideoMode === 'solved') {
                         solveField();
                     }
-                }
+                } else if (data.status === 'paused') {
+                    clearInterval(solveStatusPollInterval);
+                    isSolving = false; // Reset flag
+                } else {
             })
             .catch(error => {
                 console.error('Error fetching solver status:', error);

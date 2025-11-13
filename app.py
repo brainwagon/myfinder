@@ -243,6 +243,7 @@ def solve_plate():
     """Capture an image and solve for RA/Dec/Roll."""
     global solver_status, solver_result, test_mode, solved_image_bytes, is_paused
     if is_paused:
+        solver_status = "paused"
         return
     img = None
     try:
