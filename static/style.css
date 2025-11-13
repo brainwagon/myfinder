@@ -102,7 +102,6 @@ body {
     margin-left: auto; /* Center the table */
     margin-right: auto; /* Center the table */
     border-collapse: collapse; /* Remove space between cell borders */
-    border: 1px solid #ccc; /* Add border around the table */
 }
 
 .radec-container table td {
