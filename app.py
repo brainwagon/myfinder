@@ -25,8 +25,7 @@ font_path = "/usr/share/fonts/truetype/noto/NotoSansDisplay-Regular.ttf"
 font_size = 12
 font = ImageFont.truetype(font_path, font_size)
 
-for k, v in tetra.database_properties.items():
-        print(k, v)
+
 
 
 # go ahead and load the ids...
@@ -279,7 +278,7 @@ def solve_plate():
             solver_status = "solved"
 
             # send the center to stellarium...
-            print(point_stellarium(radians(solution['RA']), radians(solution['Dec'])))
+            point_stellarium(radians(solution['RA']), radians(solution['Dec']))
 
         else:
             # Save the original input image into memory so the UI can still display something
@@ -365,21 +364,11 @@ config = camera.create_still_configuration(
         "format" : "YUV420",
         },
         )
-print("STILL IMAGE CONFIGURATION")
-for k, v in config.items():
-	print(k, v)
+
 camera.configure(config)
 camera.start()
 
-# Print available controls for debugging
-print("\nAvailable Camera Controls:")
-print("--------------------------------------------------------------------------------")
-print(f"{'Control Name':<25} {'Min':<15} {'Max':<15} {'Default':<15}")
-print("--------------------------------------------------------------------------------")
-for control_name in sorted(camera.camera_controls.keys()):
-    min_val, max_val, default_val = camera.camera_controls[control_name]
-    print(f"{control_name:<25} {str(min_val):<15} {str(max_val):<15} {str(default_val):<15}")
-print("--------------------------------------------------------------------------------")
+
 
 # Set initial controls safely
 initial_controls = {
@@ -397,7 +386,6 @@ def safe_set_controls(controls):
     available_controls = camera.camera_controls
     safe_controls = {k: v for k, v in controls.items() if k in available_controls}
     if safe_controls:
-        print(f"Attempting to set controls: {safe_controls}")
         camera.set_controls(safe_controls)
 
 safe_set_controls(initial_controls)
