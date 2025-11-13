@@ -1,3 +1,4 @@
+import logging
 from flask import Flask, render_template, Response, request, jsonify
 import sys
 import io
@@ -78,12 +79,11 @@ def point_stellarium(ra_radians, dec_radians, stellarium_url="http://192.168.1.1
     y = math.cos(dec_radians) * math.sin(ra_radians)
     z = math.sin(dec_radians)
     params = { 'j2000' : str([ x, y, z ]) }
-    print(params)
     response = requests.post(endpoint, data=params)
-    print(response.status_code)
     return response.status_code == 200
 
 from picamera2 import Picamera2
+
 
 app = Flask(__name__)
 
@@ -163,7 +163,6 @@ def solve_plate():
             if not image_files:
                 solver_status = "failed"
                 solver_result = {"error": "No test images found."}
-                print("Solver failed: No test images found in 'test-images' directory.")
                 return
             random_image_file = random.choice(image_files)
             image_path = os.path.join(test_images_dir, random_image_file)
@@ -247,7 +246,6 @@ def solve_plate():
             solver_result = {"solved_image_url": "/solved_field.jpg"}
 
     except Exception as e:
-        print(f"Solver failed: {e}")
         if img:
             try:
                 buf = io.BytesIO()
@@ -486,4 +484,5 @@ def serve_solved_image():
             return "", 404
 
 if __name__ == '__main__':
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
     app.run(host='0.0.0.0', port=8080, threaded=True)
