@@ -9,7 +9,6 @@ import random
 import numpy as np
 # This is needed for some reason...
 np.math = math
-from astropy.io import fits
 import datetime
 import threading
 import time
@@ -18,6 +17,13 @@ from PIL import Image, ImageDraw, ImageFont
 import ephem
 import csv
 import requests
+import i2c
+
+# libraries needed to solve for a "proper" WCS coordinate system
+
+from astropy import units as u
+from astropy.coordinates import SkyCoord
+from astropy.wcs.utils import fit_wcs_from_points  
 
 tetra = tetra3.Tetra3()
 
@@ -268,6 +274,7 @@ def solve_plate():
         solution = tetra.solve_from_image(img,
                 return_visual=True, return_matches=True,
                 distortion=-0.003857906866170312)
+
         if solution and 'RA' in solution and 'Dec' in solution and 'Roll' in solution:
             # Get the visual solution
             visual_solution = solution['visual']
@@ -326,8 +333,46 @@ def solve_plate():
 
             solver_status = "solved"
 
+            # MTV here is some magic... 
+            # We asked for the solver to return the list of matched stars.
+            # The data will include both the RA/DEC (in degrees) for each 
+            # of the stars, as well as the RA/DEC.   Using the two, we 
+            # can ask astropy to compute an appropriate conversion object,
+            # including the possibility of adding the distortion parameter.
+
+            try:
+                print("TESTING")
+
+                matched_stars = np.array(solution["matched_stars"])
+                matched_centroids = np.array(solution["matched_centroids"])
+
+                # x is returned as the second column by tetra3
+                # y is the first column
+
+                star_x = matched_centroids[:,1]
+                star_y = matched_centroids[:,0]
+                star_xy = (star_x, star_y)
+
+                star_ra = np.array(matched_stars[:,0]) * u.deg
+                star_dec = np.array(matched_stars[:,1]) * u.deg
+
+                world_coords = SkyCoord(ra = star_ra, dec = star_dec, frame = 'icrs')
+
+                # now, fit the model.. 
+                print("GOING TO COMPUTE WCS")
+                wcs = fit_wcs_from_points(
+                    star_xy,
+                    world_coords, 
+                    projection='TAN',
+                    sip_degree=2)
+
+                print("WCS", wcs)
+            except Exception as e:
+                print(f"EXCEPTION DURING WCS HANDLING: {e}")
+
             # send the center to stellarium...
-            point_stellarium(radians(solution['RA']), radians(solution['Dec']))
+            if False:
+                point_stellarium(radians(solution['RA']), radians(solution['Dec']))
 
         else:
             # Save the original input image into memory so the UI can still display something
@@ -581,7 +626,18 @@ def serve_solved_image():
         else:
             return "", 404
 
+@app.route('/api/i2c')
+def i2c_status():
+    """Return the status of I2C peripherals."""
+    status = {}
+    for peripheral in i2c.get_detected_peripherals():
+        status[peripheral] = {}
+        for value_name in i2c.get_peripheral_value_names(peripheral):
+            status[peripheral][value_name] = i2c.get_peripheral_value(peripheral, value_name)
+    return jsonify(status)
+
 if __name__ == '__main__':
+    i2c.init_peripherals()
     solve_fps_thread = threading.Thread(target=calculate_solve_fps)
     solve_fps_thread.daemon = True
     solve_fps_thread.start()

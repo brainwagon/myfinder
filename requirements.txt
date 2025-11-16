@@ -8,3 +8,4 @@ pynmea2
 requests
 tqdm
 ephem
+smbus2
