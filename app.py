@@ -91,6 +91,27 @@ def decode_simbad_greek(text):
         result = result.replace(code, greek) 
     return result
 
+constellation_boundaries = {}
+
+def load_constellation_boundaries():
+    """Load constellation boundaries from bound_20.dat."""
+    try:
+        with open("bound_20.dat", "r") as f:
+            for line in f:
+                ra_h = float(line[0:10])
+                dec_d = float(line[11:22])
+                constellation = line[23:27].strip()
+                
+                # Convert RA from hours to degrees
+                ra_d = ra_h * 15.0
+                
+                if constellation not in constellation_boundaries:
+                    constellation_boundaries[constellation] = []
+                
+                constellation_boundaries[constellation].append((ra_d, dec_d))
+    except FileNotFoundError:
+        print("Warning: bound_20.dat not found. Constellation boundaries will not be drawn.")
+
 def point_stellarium(ra_radians, dec_radians, stellarium_url="http://192.168.1.139:8090"):
     endpoint = f"{stellarium_url}/api/main/view" 
     x = math.cos(dec_radians) * math.cos(ra_radians)
@@ -322,13 +343,6 @@ def solve_plate():
                 except Exception:
                     pass
 
-            # Save the combined image into memory (JPEG)
-            buf = io.BytesIO()
-            combined_image.save(buf, format='JPEG')
-            buf.seek(0)
-            with solved_image_lock:
-                solved_image_bytes = buf.getvalue()
-
             # Build solver_result
             solution_time_val = solution.get("T_solve", 0.0)
             ra_hms = ephem.hours(radians(solution['RA']))
@@ -391,8 +405,43 @@ def solve_plate():
                     sip_degree=2)
 
                 print("WCS", wcs)
+
+                # Draw constellation boundaries
+                constellation_name = solver_result.get("constellation")
+                if constellation_name and constellation_name in constellation_boundaries:
+                    points = constellation_boundaries[constellation_name]
+                    # we need to transform the points to pixel coordinates
+                    pixel_points = []
+                    for ra, dec in points:
+                        try:
+                            px, py = wcs.world_to_pixel(SkyCoord(ra, dec, unit="deg"))
+                            pixel_points.append((px, py))
+                        except Exception as e:
+                            print(f"Error converting point to pixel: {e}")
+                            pixel_points.append(None)
+                    
+                    # Draw lines between consecutive points
+                    for i in range(len(pixel_points) - 1):
+                        p1 = pixel_points[i]
+                        p2 = pixel_points[i+1]
+                        if p1 and p2:
+                            # Check if both points are within the image boundaries
+                            if (0 <= p1[0] < img.width and 0 <= p1[1] < img.height and
+                                0 <= p2[0] < img.width and 0 <= p2[1] < img.height):
+                                draw.line([p1, p2], fill="yellow", width=1)
+
             except Exception as e:
                 print(f"EXCEPTION DURING WCS HANDLING: {e}")
+
+            # now that we have modified the image, we must re-save it
+            # before we return.
+            #
+            # Save the combined image into memory (JPEG)
+            buf = io.BytesIO()
+            combined_image.save(buf, format='JPEG')
+            buf.seek(0)
+            with solved_image_lock:
+                solved_image_bytes = buf.getvalue()
 
             # send the center to stellarium...
             if False:
@@ -661,6 +710,7 @@ def i2c_status():
     return jsonify(status)
 
 if __name__ == '__main__':
+    load_constellation_boundaries()
     i2c.init_peripherals()
     solve_fps_thread = threading.Thread(target=calculate_solve_fps)
     solve_fps_thread.daemon = True
