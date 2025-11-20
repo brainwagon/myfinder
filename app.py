@@ -352,6 +352,7 @@ def solve_plate():
                 "solved_image_url": "/solved_field.jpg",
                 "solution_time": f"{solution_time_val:.2f}ms",
                 "constellation": ephem.constellation((radians(solution['RA']), radians(solution['Dec'])))[1],
+                "matched_stars_count": len(solution.get("matched_catID", [])),
             }
 
             solver_status = "solved"

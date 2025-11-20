@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const decDisplay = document.getElementById('dec-display');
     const altDisplay = document.getElementById('alt-display');
     const azDisplay = document.getElementById('az-display');
+    const matchedStarsOverlay = document.getElementById('matched_stars_overlay');
 
     let currentVideoMode = 'live'; // Default to live mode
     let isSolving = false; // Flag to prevent multiple simultaneous solves
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         if (currentVideoMode === 'live') {
             videoModeOverlay.classList.remove('solve-success', 'solve-fail');
             radecContainer.style.display = 'none';
+            matchedStarsOverlay.innerText = '';
         } else if (currentVideoMode === 'solved') {
             radecContainer.style.display = 'block';
             if (!isSolving) {
@@ -260,6 +262,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     videoModeOverlay.innerText = 'SOLVE';
                     videoModeOverlay.classList.remove('solve-fail');
                     videoModeOverlay.classList.add('solve-success');
+                    matchedStarsOverlay.innerText = data.matched_stars_count + ' stars';
                     clearInterval(solveStatusPollInterval);
                     isSolving = false; // Reset flag
                     if (currentVideoMode === 'solved') {
@@ -273,6 +276,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     videoModeOverlay.innerText = 'FAIL';
                     videoModeOverlay.classList.remove('solve-success');
                     videoModeOverlay.classList.add('solve-fail');
+                    matchedStarsOverlay.innerText = '';
                     clearInterval(solveStatusPollInterval);
                     isSolving = false; // Reset flag
                     if (currentVideoMode === 'solved') {
