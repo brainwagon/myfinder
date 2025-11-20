@@ -403,7 +403,7 @@ def solve_plate():
                     sip_degree=2)
 
                 # Draw constellation boundaries
-                constellation_name = solver_result.get("constellation")
+                constellation_name = solver_result.get("constellation").upper()
                 if constellation_name and constellation_name in constellation_boundaries:
                     points = constellation_boundaries[constellation_name]
                     # we need to transform the points to pixel coordinates
@@ -413,18 +413,15 @@ def solve_plate():
                             px, py = wcs.world_to_pixel(SkyCoord(ra, dec, unit="deg"))
                             pixel_points.append((px, py))
                         except Exception as e:
-                            # print(f"Error converting point to pixel: {e}")
+                            print(f"Error converting point to pixel: {e}")
                             pixel_points.append(None)
                     
                     # Draw lines between consecutive points
                     for i in range(len(pixel_points) - 1):
                         p1 = pixel_points[i]
                         p2 = pixel_points[i+1]
-                        if p1 and p2:
-                            # Check if at least one point is within the image boundaries
-                            if (0 <= p1[0] < img.width and 0 <= p1[1] < img.height) or \
-                               (0 <= p2[0] < img.width and 0 <= p2[1] < img.height):
-                                draw.line([p1, p2], fill="yellow", width=1)
+                        # relies on clipping from the ImageDraw library...
+                        draw.line([p1, p2], fill="yellow", width=1)
 
             except Exception as e:
                 print(f"EXCEPTION DURING WCS HANDLING: {e}")
