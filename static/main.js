@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const altDisplay = document.getElementById('alt-display');
     const azDisplay = document.getElementById('az-display');
     const matchedStarsOverlay = document.getElementById('matched_stars_overlay');
+    matchedStarsOverlay.style.display = 'none'; // Initialize as hidden
 
     let currentVideoMode = 'live'; // Default to live mode
     let isSolving = false; // Flag to prevent multiple simultaneous solves
